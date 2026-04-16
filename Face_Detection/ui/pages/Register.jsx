@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { api } from '../src/api'
 import AuthModal from '../components/AuthModal'
+import Toast from '../components/Toast'
 import './Register.css'
 
 export default function Register() {
@@ -11,7 +12,7 @@ export default function Register() {
   const [previews, setPreviews] = useState([])
   const [showAuth, setShowAuth] = useState(false)
   const [loading,  setLoading]  = useState(false)
-  const [result,   setResult]   = useState(null)
+  const [toast,    setToast]    = useState(null)   // { message, type }
   const [error,    setError]    = useState('')
   const fileRef = useRef(null)
 
@@ -21,7 +22,7 @@ export default function Register() {
     const arr = Array.from(files).filter(f => f.type.startsWith('image/'))
     setImages(arr)
     setPreviews(arr.map(f => URL.createObjectURL(f)))
-    setResult(null); setError('')
+    setError('')
   }
 
   const onDrop = e => {
@@ -29,7 +30,6 @@ export default function Register() {
     handleFiles(e.dataTransfer.files)
   }
 
-  // Clicking Register triggers auth modal first
   const handleRegisterClick = () => {
     if (!form.person_id || !form.name) { setError('Employee ID and Name are required.'); return }
     if (images.length === 0)           { setError('Please upload at least one image.'); return }
@@ -39,22 +39,38 @@ export default function Register() {
 
   const handleAuthSuccess = async () => {
     setShowAuth(false)
-    setLoading(true); setError(''); setResult(null)
+    setLoading(true); setError('')
     const fd = new FormData()
     Object.entries(form).forEach(([k,v]) => fd.append(k,v))
     images.forEach(img => fd.append('images', img))
     try {
       const res = await api.register(fd)
-      setResult(res.data)
+      const skipped = res.data.failed > 0 ? ` · ${res.data.failed} images skipped` : ''
+      setToast({
+        type: 'success',
+        message: `${res.data.name} registered · ${res.data.embeddings} embeddings stored${skipped}`
+      })
       setForm({ person_id:'', name:'', role:'', department:'', access_level:'standard' })
       setImages([]); setPreviews([])
     } catch(e) {
-      setError(e.response?.data?.error || 'Registration failed.')
+      setToast({
+        type: 'error',
+        message: e.response?.data?.error || 'Registration failed.'
+      })
     } finally { setLoading(false) }
   }
 
   return (
     <div className="reg-page fade-in">
+      {/* ── Top-center toast ──────────────────────────── */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDone={() => setToast(null)}
+        />
+      )}
+
       {showAuth && (
         <AuthModal
           action="register a new employee"
@@ -148,7 +164,9 @@ export default function Register() {
 
           <div className="img-count">
             <span className={images.length>0?'count-ok':'count-none'}>
-              {images.length > 0 ? `✓ ${images.length} IMAGE${images.length>1?'S':''} SELECTED` : 'NO IMAGES SELECTED'}
+              {images.length > 0
+                ? `✓ ${images.length} IMAGE${images.length>1?'S':''} SELECTED`
+                : 'NO IMAGES SELECTED'}
             </span>
             {images.length > 0 && (
               <button className="clear-btn"
@@ -160,17 +178,7 @@ export default function Register() {
         </div>
       </div>
 
-      {error  && <div className="reg-err">⚠ {error}</div>}
-      {result && (
-        <div className="reg-success">
-          <span className="suc-icon">✓</span>
-          <div>
-            <strong>{result.name}</strong> registered successfully ·{' '}
-            {result.embeddings} embeddings stored
-            {result.failed > 0 && ` · ${result.failed} images skipped`}
-          </div>
-        </div>
-      )}
+      {error && <div className="reg-err">⚠ {error}</div>}
 
       <button
         className="reg-submit"

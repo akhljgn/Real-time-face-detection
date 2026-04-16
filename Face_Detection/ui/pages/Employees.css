@@ -101,3 +101,134 @@
 }
 .toast-ok  { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
 .toast-err { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red); }
+
+
+/* ── Inline edit row highlight ───────────────────────── */
+.emp-row--editing {
+  background: rgba(0, 255, 136, 0.04);
+  outline: 1px solid rgba(0, 255, 136, 0.25);
+  outline-offset: -1px;
+}
+
+/* ── Inline inputs ───────────────────────────────────── */
+.inline-input {
+  background: #0d0d14;
+  border: 1px solid #2a3a4a;
+  border-radius: 4px;
+  color: #e8e8f0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  padding: 5px 8px;
+  width: 100%;
+  min-width: 90px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.inline-input:focus {
+  border-color: #00ff88;
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.12);
+}
+
+.inline-input::placeholder {
+  color: #3a3a50;
+}
+
+/* ── Inline select ───────────────────────────────────── */
+.inline-select {
+  background: #0d0d14;
+  border: 1px solid #2a3a4a;
+  border-radius: 4px;
+  color: #e8e8f0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  padding: 5px 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.inline-select:focus {
+  border-color: #00ff88;
+}
+
+/* ── Action button group ─────────────────────────────── */
+.action-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* ── Edit button ─────────────────────────────────────── */
+.edit-btn {
+  background: transparent;
+  border: 1px solid #2e75b6;
+  border-radius: 3px;
+  color: #4d9fff;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: rgba(77, 159, 255, 0.12);
+  border-color: #4d9fff;
+  color: #fff;
+}
+
+.edit-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Save button ─────────────────────────────────────── */
+.save-btn {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid #00ff88;
+  border-radius: 3px;
+  color: #00ff88;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 136, 0.22);
+}
+
+.save-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Cancel button ───────────────────────────────────── */
+.cancel-btn {
+  background: transparent;
+  border: 1px solid #3a3a50;
+  border-radius: 3px;
+  color: #7a7a90;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  padding: 5px 9px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  border-color: #ff3b3b;
+  color: #ff3b3b;
+}
+
+.cancel-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

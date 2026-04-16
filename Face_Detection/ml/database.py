@@ -185,3 +185,19 @@ def register_person(person_id, name, role, department, access_level, pil_images)
         "embeddings": len(face_vecs),
         "failed"    : failed,
     }
+
+
+def update_person_info(person_id: str, updates: dict) -> bool:
+    """Update editable fields on a person row by person_id (text ID)."""
+    if not updates:
+        return False
+    cols   = ", ".join(f"{k} = ?" for k in updates)
+    values = list(updates.values()) + [person_id]
+    try:
+        conn = get_conn()
+        conn.execute(f"UPDATE persons SET {cols} WHERE person_id = ?", values)
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"[DB] update_person_info error: {e}")
+        return False

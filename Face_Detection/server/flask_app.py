@@ -4,6 +4,11 @@ import threading
 from flask import Flask, Response, jsonify, request, send_from_directory, session
 from flask_cors import CORS
 import config
+import secrets
+import smtplib
+import time as _time
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(
     __name__,
@@ -175,6 +180,133 @@ def list_snapshots():
 def serve_snapshot(filename):
     return send_from_directory(config.PATHS["SNAPSHOTS"], filename)
 
+
+# ─── OTP STORE (in-memory, single-server) ────────────────────────────────────
+# Format: { otp_code: str, expires_at: float, attempts: int }
+_otp_store = {}
+_OTP_TTL        = 300   # 5 minutes
+_OTP_MAX_TRIES  = 5
+ 
+ 
+def _mask_email(email: str) -> str:
+    """Turn 'admin@gmail.com' → 'ad***@gmail.com'"""
+    try:
+        local, domain = email.split("@", 1)
+        visible = local[:2] if len(local) > 2 else local[0]
+        return f"{visible}***@{domain}"
+    except Exception:
+        return "***"
+ 
+ 
+def _send_gmail_otp(code: str) -> None:
+    """
+    Send OTP via Gmail SMTP using an App Password.
+    Raises smtplib.SMTPException or ConnectionRefusedError on failure.
+    """
+    sender   = config.OTP_GMAIL_SENDER        # e.g. "youraccount@gmail.com"
+    password = config.OTP_GMAIL_APP_PASSWORD  # 16-char App Password (no spaces)
+    receiver = config.OTP_ADMIN_EMAIL         # where the code is delivered
+ 
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"SecureVision Admin OTP: {code}"
+    msg["From"]    = f"SecureVision <{sender}>"
+    msg["To"]      = receiver
+ 
+    plain = (
+        f"Your SecureVision admin one-time code is: {code}\n\n"
+        f"This code expires in 5 minutes.\n"
+        f"If you did not request this, ignore this email."
+    )
+    html = f"""
+    <div style="font-family:monospace;background:#0a0a0b;color:#e8e8f0;
+                padding:32px;border-radius:8px;max-width:420px;margin:auto;">
+      <div style="color:#00ff88;font-size:0.8rem;letter-spacing:.12em;
+                  margin-bottom:18px;">⬡ SECUREVISION</div>
+      <div style="font-size:0.85rem;color:#7a7a90;margin-bottom:24px;">
+        Admin authentication code
+      </div>
+      <div style="background:#13131a;border:1px solid #1e1e28;border-radius:6px;
+                  padding:24px;text-align:center;margin-bottom:24px;">
+        <div style="font-size:2.4rem;letter-spacing:.35em;color:#00ff88;
+                    font-weight:700;">{code}</div>
+      </div>
+      <div style="font-size:0.72rem;color:#3a3a50;line-height:1.6;">
+        This code expires in <strong style="color:#7a7a90">5 minutes</strong>.<br>
+        If you did not request this, ignore this email.
+      </div>
+    </div>
+    """
+ 
+    msg.attach(MIMEText(plain, "plain"))
+    msg.attach(MIMEText(html,  "html"))
+ 
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as srv:
+        srv.login(sender, password)
+        srv.sendmail(sender, receiver, msg.as_string())
+ 
+ 
+# ─── PASTE THESE ROUTES into flask_app.py (before serve_react) ───────────────
+ 
+@app.route("/api/otp/send", methods=["POST"])
+def otp_send():
+    """Generate and email a fresh OTP. Rate-limited by cooldown on frontend."""
+    code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
+    _otp_store.clear()  # invalidate any previous code
+    _otp_store.update({
+        "code"      : code,
+        "expires_at": _time.time() + _OTP_TTL,
+        "attempts"  : 0,
+    })
+    try:
+        _send_gmail_otp(code)
+    except Exception as e:
+        _otp_store.clear()
+        return jsonify({"error": f"SMTP error: {e}"}), 500
+ 
+    masked = _mask_email(config.OTP_ADMIN_EMAIL)
+    return jsonify({"success": True, "masked_email": masked})
+ 
+ 
+@app.route("/api/otp/verify", methods=["POST"])
+def otp_verify():
+    """Verify submitted OTP code and set session on success."""
+    data = request.get_json(silent=True) or {}
+    submitted = str(data.get("code", "")).strip()
+ 
+    store = _otp_store
+    if not store:
+        return jsonify({"error": "No OTP requested"}), 400
+ 
+    if _time.time() > store.get("expires_at", 0):
+        _otp_store.clear()
+        return jsonify({"error": "OTP has expired"}), 400
+ 
+    store["attempts"] = store.get("attempts", 0) + 1
+    if store["attempts"] > _OTP_MAX_TRIES:
+        _otp_store.clear()
+        return jsonify({"error": "Too many attempts. Request a new code."}), 429
+ 
+    if not secrets.compare_digest(submitted, store.get("code", "")):
+        remaining = _OTP_MAX_TRIES - store["attempts"]
+        return jsonify({"error": f"Invalid code. {remaining} attempts left."}), 401
+ 
+    # Code is correct → authenticate the session exactly like /api/login does
+    _otp_store.clear()
+    session["logged_in"] = True
+    return jsonify({"success": True})
+
+@app.route("/api/persons/<person_id>", methods=["PUT"])
+@require_auth
+def update_person(person_id):
+    from ml.database import update_person_info
+    data = request.get_json(silent=True) or {}
+    allowed = {"name", "role", "department", "access_level"}
+    updates = {k: v for k, v in data.items() if k in allowed}
+    if not updates:
+        return jsonify({"error": "No valid fields"}), 400
+    ok = update_person_info(person_id, updates)
+    return jsonify({"success": ok})
+ 
 
 # ── Serve React app ───────────────────────────────────────
 @app.route("/", defaults={"path": ""})

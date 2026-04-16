@@ -2,5 +2,7 @@
 /Face_Detection/__pycache__
 /Face_Detection/data
 
-/Models/InsightFace/buffalo_l
-/Models/InsightFace/buffalo_l.zip
+/Models/
+*.onnx
+*.zip
+

@@ -178,7 +178,7 @@ def register_person_colab():
     NAME         = input("Full Name       : ").strip()
     ROLE         = input("Role            : ").strip()
     DEPARTMENT   = input("Department      : ").strip()
-    ACCESS_LEVEL = input("Access Level (admin/standard/restricted) [standard]: ").strip() or "standard"
+    ACCESS_LEVEL = input("Access Level (standard/restricted) [standard]: ").strip() or "standard"
 
     if not PERSON_ID or not NAME:
         print("[REG] Person ID and Name are required.")

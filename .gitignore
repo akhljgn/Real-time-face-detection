@@ -1,9 +1,8 @@
 /Face_Detection/venv
+/Face_Detection/config.py
 /Face_Detection/__pycache__
 /Face_Detection/data
 
 /Models/
 *.onnx
 *.zip
-
-/Face_Detection/config.py

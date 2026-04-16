@@ -98,7 +98,7 @@ export default function Register() {
             <div className="field-group full">
               <label>ACCESS LEVEL</label>
               <div className="access-pills">
-                {['standard','admin','restricted'].map(lvl => (
+                {['standard','restricted'].map(lvl => (
                   <button
                     key={lvl}
                     type="button"

@@ -6,3 +6,4 @@
 *.onnx
 *.zip
 
+/Face_Detection/config.py

@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap');
+
+:root {
+  --bg:        #0a0a0b;
+  --bg2:       #111114;
+  --bg3:       #18181d;
+  --card:      #13131a;
+  --border:    #1e1e28;
+  --border2:   #2a2a38;
+  --green:     #00ff88;
+  --green-dim: #00c468;
+  --green-bg:  rgba(0,255,136,0.07);
+  --red:       #ff3b3b;
+  --red-dim:   #cc2020;
+  --red-bg:    rgba(255,59,59,0.07);
+  --amber:     #ffaa00;
+  --amber-bg:  rgba(255,170,0,0.07);
+  --blue:      #4d9fff;
+  --blue-bg:   rgba(77,159,255,0.07);
+  --txt:       #f3f3f7;
+  --txt2:      #cacad2;
+  --txt3:      #767474;
+  --accent:    #00ff88;
+  --mono:      'Space Mono', monospace;
+  --sans:      'DM Sans', sans-serif;
+  --display:   'Bebas Neue', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--txt3); }
+
+/* Selection */
+::selection { background: rgba(0,255,136,0.2); color: var(--green); }
+
+/* Animations */
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(0,255,136,0); }
+}
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.fade-in  { animation: fade-in 0.4s ease forwards; }
+.slide-in { animation: slide-in 0.35s ease forwards; }

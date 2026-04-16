@@ -150,7 +150,7 @@ def main():
 
     # 3. Load ArcFace
     print("[INFO] Loading ArcFace...")
-    arcface_session = ort.InferenceSession(cfg.ARCFACE_PATH, providers=["CPUExecutionProvider"])
+    arcface_session = ort.InferenceSession(cfg.ARCFACE_PATH, providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
     arcface_input   = arcface_session.get_inputs()[0].name
 
     def get_embedding(pil_img):

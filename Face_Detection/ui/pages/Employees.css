@@ -78,7 +78,6 @@
   font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
   letter-spacing: 0.1em; padding: 0.2rem 0.5rem; border-radius: 2px;
 }
-.acc-admin { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(255,170,0,0.2); }
 .acc-std   { background: var(--green-bg); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
 .acc-rest  { background: var(--red-bg);   color: var(--red);   border: 1px solid rgba(255,59,59,0.2); }
 

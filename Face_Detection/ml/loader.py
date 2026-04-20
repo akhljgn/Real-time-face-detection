@@ -41,7 +41,7 @@ def get_models():
     # ArcFace
     arcface = ort.InferenceSession(
         config.PATHS["ARCFACE"],
-        providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+        providers=["CPUExecutionProvider"]
     )
     print("[ML] ArcFace ready ✓")
 

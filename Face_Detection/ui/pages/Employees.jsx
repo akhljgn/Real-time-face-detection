@@ -106,8 +106,8 @@ export default function Employees() {
     (p.role || '').toLowerCase().includes(search.toLowerCase())
   )
 
-  const accessOptions = ['standard', 'admin', 'restricted']
-  const accessColor   = { admin: 'acc-admin', standard: 'acc-std', restricted: 'acc-rest' }
+  const accessOptions = ['standard', 'restricted']
+  const accessColor   = {standard: 'acc-std', restricted: 'acc-rest' }
 
   return (
     <div className="emp-page fade-in">
@@ -228,6 +228,7 @@ export default function Employees() {
                       {isEditing ? (
                         <select
                           className="inline-select"
+                          autoComplete="off"
                           value={editDraft.access_level}
                           onChange={e => setEditDraft(d => ({ ...d, access_level: e.target.value }))}
                         >

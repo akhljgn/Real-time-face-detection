@@ -9,6 +9,7 @@ import smtplib
 import time as _time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from waitress import serve
 
 app = Flask(
     __name__,
@@ -90,7 +91,7 @@ def status():
 
 # ── Events ───────────────────────────────────────────────
 @app.route("/api/events")
-@require_auth
+# @require_auth
 def events():
     from ml.worker import state
     f     = request.args.get("filter", "all")
@@ -106,13 +107,13 @@ def events():
 
 # ── Persons ──────────────────────────────────────────────
 @app.route("/api/persons")
-@require_auth
+# @require_auth
 def get_persons():
     from ml.database import list_persons
     return jsonify({"persons": list_persons()})
 
 @app.route("/api/persons/<person_id>", methods=["DELETE"])
-@require_auth
+# @require_auth
 def del_person(person_id):
     from ml.database import delete_person
     ok = delete_person(person_id)
@@ -164,7 +165,7 @@ def register():
 
 # ── Snapshots ────────────────────────────────────────────
 @app.route("/api/snapshots")
-@require_auth
+# @require_auth
 def list_snapshots():
     snap_dir = config.PATHS["SNAPSHOTS"]
     files    = sorted(
@@ -176,7 +177,7 @@ def list_snapshots():
     })
 
 @app.route("/snapshots/<filename>")
-@require_auth
+# @require_auth
 def serve_snapshot(filename):
     return send_from_directory(config.PATHS["SNAPSHOTS"], filename)
 
@@ -305,6 +306,8 @@ def update_person(person_id):
     if not updates:
         return jsonify({"error": "No valid fields"}), 400
     ok = update_person_info(person_id, updates)
+    if ok and _worker:
+        _worker.reload_db() 
     return jsonify({"success": ok})
  
 
@@ -317,11 +320,22 @@ def serve_react(path):
         return send_from_directory(config.PATHS["UI"], path)
     return send_from_directory(config.PATHS["UI"], "index.html")
 
+# def run_flask():
+#     app.run(
+#         host="0.0.0.0",    # ← 0.0.0.0 so any device on network can access
+#         port=config.FLASK_PORT,
+#         debug=False,
+#         use_reloader=False,
+#         threaded=True,
+#     )     (debug server, not for production!)
+
 def run_flask():
-    app.run(
-        host="0.0.0.0",    # ← 0.0.0.0 so any device on network can access
-        port=config.FLASK_PORT,
-        debug=False,
-        use_reloader=False,
-        threaded=True,
-    )
+    try:
+        serve(
+            app,
+            host="0.0.0.0",
+            port=config.FLASK_PORT,
+            threads=8
+        )
+    except KeyboardInterrupt:
+        print("[APP] Server stopped.")

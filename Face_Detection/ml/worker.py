@@ -95,7 +95,7 @@ class RecognitionWorker(threading.Thread):
         self._db_cache = load_embeddings()
         print(f"[ML] Ready · {len(self._db_cache)} profiles loaded")
 
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(0) #0 for default webcam, 1 for external
         if not cap.isOpened():
             print("[ML] ERROR: webcam unavailable")
             return
@@ -194,7 +194,10 @@ class RecognitionWorker(threading.Thread):
             for face in tracked:
                 ax1,ay1,ax2,ay2 = face["box"]
                 info = face["info"]
-                col  = (45,200,100) if info.get("matched") else (50,50,220)
+                if info.get("matched"):
+                    col = (20,140,255) if info.get("access_level") == "restricted" else (45,200,100)
+                else:
+                    col = (50,50,220)
                 cv2.rectangle(out,(ax1,ay1),(ax2,ay2),col,2)
                 label = info.get("identity","Unknown")
                 (tw,th),_ = cv2.getTextSize(label,cv2.FONT_HERSHEY_DUPLEX,0.65,1)
@@ -202,7 +205,9 @@ class RecognitionWorker(threading.Thread):
                 cv2.putText(out,label,(ax1+6,ay1-6),
                     cv2.FONT_HERSHEY_DUPLEX,0.65,(255,255,255),1,cv2.LINE_AA)
                 if info.get("matched"):
-                    sub = f"{info.get('role','')} · {info.get('department','')}"
+                    role = info.get('role','').strip()
+                    dept = info.get('department','').strip()
+                    sub  = f"{role} | {dept}" if role and dept else role or dept
                     cv2.putText(out,sub,(ax1+4,ay2+20),
                         cv2.FONT_HERSHEY_DUPLEX,0.5,col,1,cv2.LINE_AA)
 

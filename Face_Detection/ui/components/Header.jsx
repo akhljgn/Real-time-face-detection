@@ -8,6 +8,10 @@ export default function Header() {
   const [fps,     setFps]     = useState(0)
   const [faces,   setFaces]   = useState(0)
   const [running, setRunning] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return !document.body.classList.contains('theme-light')
+  })
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
@@ -25,6 +29,15 @@ export default function Header() {
     }, 1000)
     return () => clearInterval(t)
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (isDark) {
+      document.body.classList.remove('theme-light')
+    } else {
+      document.body.classList.add('theme-light')
+    }
+  }, [isDark])
 
   const pad = n => String(n).padStart(2,'0')
   const timeStr = `${pad(time.getHours())}:${pad(time.getMinutes())}:${pad(time.getSeconds())}`
@@ -77,6 +90,18 @@ export default function Header() {
         <div className="hdr-stat">
           <span className="hdr-stat-label">FACES</span>
           <span className="hdr-stat-val val-mono">{faces}</span>
+        </div>
+        <div className="hdr-stat">
+        <button
+          type="button"
+          className="theme-toggle"
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          onClick={() => setIsDark(d => !d)}
+        >
+          <span className="theme-icon">
+            {isDark ? '☾' : '☼'}
+          </span>
+        </button>
         </div>
         <div className="hdr-time">
           <span className="time-clock">{timeStr}</span>

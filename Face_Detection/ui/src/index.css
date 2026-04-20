@@ -38,6 +38,29 @@ body {
   overflow-x: hidden;
 }
 
+body.theme-light {
+  --bg:        #f4f5fb;
+  --bg2:       #e5e7f0;
+  --bg3:       #dde1ef;
+  --card:      #ffffff;
+  --border:    #d0d4e4;
+  --border2:   #b5bdd8;
+  --green:     #00c468;
+  --green-dim: #009a52;
+  --green-bg:  rgba(0,196,104,0.08);
+  --red:       #e34141;
+  --red-dim:   #c12c2c;
+  --red-bg:    rgba(227,65,65,0.08);
+  --amber:     #e6a100;
+  --amber-bg:  rgba(230,161,0,0.1);
+  --blue:      #2b7cff;
+  --blue-bg:   rgba(43,124,255,0.08);
+  --txt:       #11121a;
+  --txt2:      #2f3240;
+  --txt3:      #6b6f80;
+  --accent:    #2b7cff;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }

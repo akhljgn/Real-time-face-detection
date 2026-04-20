@@ -8,4 +8,4 @@
 
 /Models/
 *.onnx
-*.zip
+*.zip*.pem

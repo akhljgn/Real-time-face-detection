@@ -8,6 +8,8 @@
 
 /Models/
 *.onnx
-*.zip*.pem
+
+*.zip
+*.pem
 
 !Models/InsightFace/w600k_r50.onnx

@@ -1,4 +1,5 @@
 /Face_Detection/venv
+/Face_Detection/venv310
 
 
 /Face_Detection/__pycache__
@@ -11,4 +12,11 @@
 *.zip
 *.pem
 
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*.pyd
+
 !Models/InsightFace/w600k_r50.onnx
+
+DEPLOY_EC2_FREE_TIER.md

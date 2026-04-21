@@ -15,9 +15,9 @@ export const api = {
   register     : (fd)   => ax.post('/register', fd, {
   headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  sendOtp: ()     => axios.post('/api/otp/send'),
-  verifyOtp: (code) => axios.post('/api/otp/verify', { code }),
-  updatePerson: (person_id, data) => axios.put(`/api/persons/${person_id}`, data),
+  sendOtp: ()     => ax.post('/otp/send'),
+  verifyOtp: (code) => ax.post('/otp/verify', { code }),
+  updatePerson: (person_id, data) => ax.put(`/persons/${person_id}`, data),
 }
  
 export const STREAM_URL = 'http://127.0.0.1:5000/api/stream'

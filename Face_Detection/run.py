@@ -1,6 +1,15 @@
 import sys
+import os
+import warnings
+import logging
 import threading
 import webbrowser
+
+# ── Silence noisy logs ────────────────────────────────────
+warnings.filterwarnings("ignore", category=FutureWarning)
+os.environ["YOLO_VERBOSE"] = "False"
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
 from server.flask_app import run_flask, set_worker
 
 def main():

@@ -33,8 +33,11 @@ def login():
     data = request.get_json()
     if (data.get("username") == config.ADMIN_USER and
             data.get("password") == config.ADMIN_PASS):
-        session["logged_in"] = True
+        # Password step OK; OTP (if enabled) comes next.
+        session["pw_ok"] = True
         return jsonify({"success": True})
+    session.pop("pw_ok", None)
+    session.pop("logged_in", None)
     return jsonify({"success": False, "error": "Invalid credentials"}), 401
 
 @app.route("/api/logout", methods=["POST"])
@@ -59,16 +62,26 @@ def require_auth(f):
 # ── MJPEG stream ─────────────────────────────────────────
 def _generate_frames():
     from ml.worker import state
+    last = None
+    last_sent = 0.0
     while True:
         frame = state.get_frame()
-        if frame:
+        if frame and frame is not last:
+            if config.STREAM_FPS_CAP and config.STREAM_FPS_CAP > 0:
+                now = time.time()
+                min_dt = 1.0 / float(config.STREAM_FPS_CAP)
+                if now - last_sent < min_dt:
+                    time.sleep(min_dt - (now - last_sent))
+                last_sent = time.time()
+            last = frame
             yield (
                 b"--frame\r\n"
                 b"Content-Type: image/jpeg\r\n\r\n"
                 + frame +
                 b"\r\n"
             )
-        time.sleep(0.033)   # 30fps cap
+        else:
+            time.sleep(0.005)
 
 @app.route("/api/stream")
 def stream():
@@ -251,6 +264,9 @@ def _send_gmail_otp(code: str) -> None:
 @app.route("/api/otp/send", methods=["POST"])
 def otp_send():
     """Generate and email a fresh OTP. Rate-limited by cooldown on frontend."""
+    if not session.get("pw_ok"):
+        return jsonify({"error": "Password step required"}), 401
+
     code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
     _otp_store.clear()  # invalidate any previous code
     _otp_store.update({
@@ -271,6 +287,9 @@ def otp_send():
 @app.route("/api/otp/verify", methods=["POST"])
 def otp_verify():
     """Verify submitted OTP code and set session on success."""
+    if not session.get("pw_ok"):
+        return jsonify({"error": "Password step required"}), 401
+
     data = request.get_json(silent=True) or {}
     submitted = str(data.get("code", "")).strip()
  
@@ -320,22 +339,13 @@ def serve_react(path):
         return send_from_directory(config.PATHS["UI"], path)
     return send_from_directory(config.PATHS["UI"], "index.html")
 
-# def run_flask():
-#     app.run(
-#         host="0.0.0.0",    # ← 0.0.0.0 so any device on network can access
-#         port=config.FLASK_PORT,
-#         debug=False,
-#         use_reloader=False,
-#         threaded=True,
-#     )     (debug server, not for production!)
-
 def run_flask():
-    try:
-        serve(
-            app,
-            host="0.0.0.0",
-            port=config.FLASK_PORT,
-            threads=8
-        )
-    except KeyboardInterrupt:
-        print("[APP] Server stopped.")
+    import flask.cli as _cli
+    _cli.show_server_banner = lambda *a, **k: None
+    app.run(
+        host="0.0.0.0",
+        port=config.FLASK_PORT,
+        debug=False,
+        use_reloader=False,
+        threaded=True,
+    )

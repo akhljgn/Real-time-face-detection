@@ -7,6 +7,21 @@ import config
 
 _models = {}
 
+def _arcface_providers():
+    # Prefer GPU when ONNX Runtime CUDA is available.
+    # Important: this is independent from PyTorch's CUDA availability.
+    # (You can have torch CPU-only but still have onnxruntime-gpu working.)
+    avail = set(ort.get_available_providers())
+    preferred = []
+    if "CUDAExecutionProvider" in avail:
+        preferred.append("CUDAExecutionProvider")
+    # Keep CPU as a safe fallback.
+    if "CPUExecutionProvider" in avail:
+        preferred.append("CPUExecutionProvider")
+    if not preferred:
+        preferred = ["CPUExecutionProvider"]
+    return preferred
+
 def get_models():
     global _models
     if _models:
@@ -39,10 +54,15 @@ def get_models():
     print("[ML] MTCNN ready ✓")
 
     # ArcFace
+    providers = _arcface_providers()
     arcface = ort.InferenceSession(
         config.PATHS["ARCFACE"],
-        providers=["CPUExecutionProvider"]
+        providers=providers
     )
+    try:
+        print(f"[ML] ArcFace providers: {arcface.get_providers()}")
+    except Exception:
+        print(f"[ML] ArcFace providers requested: {providers}")
     print("[ML] ArcFace ready ✓")
 
     _models = {

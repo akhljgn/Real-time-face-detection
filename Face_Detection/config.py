@@ -34,6 +34,16 @@ SKIP_FRAMES         = 7   # run ML every N frames 5
 # Flask
 FLASK_PORT = 5000
 
+# Camera config
+CAMERA_INDEX        = 0
+CAMERA_BACKEND      = "dshow"   # Use DirectShow on windows to fix MSMF error -1072875772
+CAMERA_WIDTH        = 1280
+CAMERA_HEIGHT       = 720
+CAMERA_FPS          = 30
+CAMERA_FOURCC       = "MJPG"
+JPEG_QUALITY        = 80
+STREAM_FPS_CAP      = 15        # limit webcam stream endpoint to N fps (0 = no cap)
+
 # Admin credentials (change these!)
 ADMIN_USER = "admin"
 ADMIN_PASS = "admin123"
